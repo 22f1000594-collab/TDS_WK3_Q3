@@ -1,11 +1,20 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from groq import Groq
 import os
 import json
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
@@ -47,7 +56,6 @@ async def analyze_comment(request: CommentRequest):
         raw = response.choices[0].message.content
         result = json.loads(raw)
 
-        # Validate and sanitize
         sentiment = result.get("sentiment", "neutral").lower()
         if sentiment not in ["positive", "negative", "neutral"]:
             sentiment = "neutral"
